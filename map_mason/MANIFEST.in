@@ -1,0 +1,2 @@
+recursive-include map_mason/templates *
+recursive-include map_mason/static *
