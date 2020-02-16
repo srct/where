@@ -1,44 +1,47 @@
-import sqlalchemy
-from sqlalchemy.schema import Column
-from sqlalchemy import String, DateTime, Numeric, ARRAY, Table, ForeignKey, Enum, Integer
+from sqlalchemy import String, ARRAY, Table, ForeignKey, Enum, Integer, Float
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, validates
-from sqlalchemy.orm.session import Session as BaseSession
+from sqlalchemy.schema import Column
 
 from .field_types import FieldType
 
 
 # TODO declarative_base
 class Base(object):
-    id = Column(UUID, primary_key=True, default=lambda: str(uuid.uuid4()))
-
-class Session(SessionManager):
-    engine = sqlalchemy.create_engine(config['sqlalchemy.url'])
-
+    # id = Column(UUID, primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = Column(Integer, primary_key=True, autoincrement=True)
 
 
 # This table maintains the field <-> ObjectType links.
-type_links = Table('type_links', Base.metadata,
-        Column('type_id', UUID, ForeignKey('objecttype.id')),
-        Column('field_id' UUID, ForeignKey('field.id')))
+type_links = Table('type_links', Base.metadata,  # ???
+                   Column('type_id', Integer, ForeignKey('objecttype.id')),
+                   Column('field_id', Integer, ForeignKey('field.id')))
 
 
+class Point(Base):
+    """
+    TODO docstring
+    """
+    __tablename__ = 'point'
+    name = Column(String, nullable=True)
+    lat = Column(Float, nullable=False)
+    lon = Column(Float, nullable=False)
+    attributes = Column(JSONB, nullable=False)
 
-class MapObject(Base):
-    __tablename__ = 'mapobject' #TODO fix for py3/new sa
-    name = Column(String, nullable=False)
-    type_id = Column(UUID, ForeignKey('objecttype.id')) # TODO fix foreignkeyconstraint
-    type = relationship('ObjectType')
-    lat = Column(Numeric(precision=10, scale=15, asdecimal=False), nullable=False)#TODO this doesn't work
-    lon = Column(Numeric(precision=10, scale=15, asdecimal=False), nullable=False) 
-    data = Column(JSONB)
+    # Relationships
+    category_id = Column(Integer, ForeignKey('category.id'), nullable=False)
+    category = relationship('Category')
+    parent_id = Column(Integer, ForeignKey('point.id'), nullable=True)
+    parent = relationship('Point')
 
-    @validates('data')
+    @validates('attributes')
     def validate_data(self, _, data):
+        # TODO validate
         if data is None:
             return
-        fields = type.fields
+        fields = self.category.fields
         for key in data:
+            # Find Field object that corresponds to this key
             for field in fields:
                 if field.name == key:
                     break
@@ -47,43 +50,38 @@ class MapObject(Base):
             field.validate_data(data[key])
         return data
 
-class ObjectType(Base):
-    """
-    Represent a schema
-    """
-    __tablename__ = 'objecttype' #TODO py3
 
+class Category(Base):
+    """
+    Represent a schema for a single category of objects (e.g. water fountain)
+    """
+    __tablename__ = 'category'
+
+    slug = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False, unique=True)
-    fields = relationship('Field', secondary=type_links, backref='types')
+
+    fields = relationship("Field")
 
 
 class Field(Base):
     """
     Represent a field that can be on an ObjectType schema
     """
-    __tablename__ = 'field' # TODO this don't work in py3?
+    __tablename__ = 'field'
 
-    name = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False)
     type = Column(Enum(FieldType), nullable=False)
     unit = Column(String)
-    values = Column(ARRAY(String)) # enum values - TODO change to comma-separated list if sqlite don't support?
-    # types: List[ObjectType]
+
+    # Relationship
+    category_id = Column(Integer, ForeignKey('category.id'))
 
     def validate_data(self, data):
         """
         Verify that data is the correct type for this Field.
         """
-        if self.type is FieldType.BOOLEAN and isinstance(data, bool):
-            return
-        if self.type is FieldType.FLOAT and isinstance(data, float) or isinstance(data, int):
-            return
-        if self.type is FieldType.INTEGER and isinstance(data, int):
-            return
-        if self.type is FieldType.STRING and isinstance(data, str):
-            return
-        if self.type is FieldType.ENUM and isinstance(data, str):
-            if data in self.values:
-                return
+        if type(data) is not dict:
+            raise ValueError('Input "{}" for field {} is not of type dict'.format(data, self.name))
         print(type(data))
         print(self.type)
         raise ValueError('Invalid input "{}" for field {}'.format(data, self.name))
