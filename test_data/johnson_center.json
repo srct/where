@@ -1,0 +1,30 @@
+{
+    "id": 23,
+    "name:": "Johnson Center",
+    "floor": null,
+    "category": "building",
+    "parent": 1,
+    "lat": 77.374695589,
+    "lon": -44.89345483,
+    "attributes": {},
+    "children": [
+        {
+            "id": 24,
+            "name:": "Steak and Shake",
+            "floor": 1,
+            "parent": 23
+        },
+        {
+            "id": 25,
+            "name:": "Mason GEO",
+            "floor": 2,
+            "parent": 23
+        },
+        {
+            "id": 26,
+            "name:": "Math Tutoriing Center",
+            "floor": 3,
+            "parent": 23
+        }
+    ]
+}

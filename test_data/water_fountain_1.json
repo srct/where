@@ -1,9 +1,9 @@
 {
     "id": 24,
     "name": null,
+    "floor": 3,
     "category": "water_fountain",
     "parent": 1,
-    "floor": 3,
     "lat": 77.374695589,
     "lon": -44.89345483,
     "attributes": {
@@ -14,5 +14,6 @@
         "bottle_filler": {
             "value": true
         }
-    }
+    },
+    "children": []
 }
