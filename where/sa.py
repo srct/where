@@ -1,9 +1,24 @@
+from contextlib import contextmanager
+
 from sqlalchemy import String, ForeignKey, Enum, Integer, Float, JSON
 from sqlalchemy.ext.declarative import as_declarative
-from sqlalchemy.orm import relationship, validates
+from sqlalchemy.orm import relationship, validates, Session
 from sqlalchemy.schema import Column
 
 from .field_types import FieldType
+
+
+@contextmanager
+def session_context() -> Session:
+    session = Session()
+    try:
+        yield session
+        session.commit()
+    except BaseException:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 @as_declarative()
@@ -50,7 +65,6 @@ class Category(Base):
     """
     __tablename__ = 'category'
 
-    slug = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False, unique=True)
 
     fields = relationship("Field")
