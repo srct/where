@@ -66,6 +66,7 @@ class Category(Base):
     __tablename__ = 'category'
 
     name = Column(String, nullable=False, unique=True)
+    icon = Column(String, nullable=True)
 
     fields = relationship("Field")
 

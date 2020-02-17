@@ -26,9 +26,12 @@ def test_data():
         session.query(sa.Point).delete()
         session.query(sa.Field).delete()
         session.query(sa.Category).delete()
+        # Water Fountain, the class.
         wf = sa.Category()
         wf.name = "Water Fountain"
-        wf.slug = "water_fountain"
+        wf.icon
+        # coldness
+
 
 
 if __name__ == '__main__':
