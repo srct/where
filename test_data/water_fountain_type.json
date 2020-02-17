@@ -1,17 +1,17 @@
 {
-    "id": 0,
-    "slug": "water_fountain",
+    "id": 1,
     "name": "Water Fountain",
     "icon": "https://karel.pw/water.png",
     "attributes": {
         "coldness": {
             "name": "Coldness",
-            "type": "rating",
-            "icon": "https://karel.pw/water.png"
+            "type": "RATING",
+            "slug": "coldness"
         },
         "bottle_filler": {
-            "type": "bool",
-            "name": "Has Bottle Filler"
+            "type": "BOOLEAN",
+            "name": "Has Bottle Filler",
+            "slug": "bottle_filler"
         }
     }
 }

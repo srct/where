@@ -1,7 +1,7 @@
-from flask import Flask
+from flask import Flask, redirect, jsonify, abort
 
-from where.model import sa
 from where.model.field_types import FieldType
+from where.model.sa import Category, Point, Field, session_context
 
 app = Flask(__name__)
 
@@ -21,25 +21,25 @@ def index():
 
 @app.route('/test_data')
 def test_data():
-    with sa.session_context() as session:
+    with session_context() as session:
         # session = Session()
-        session.query(sa.Point).delete()
-        session.query(sa.Field).delete()
-        session.query(sa.Category).delete()
+        session.query(Point).delete()
+        session.query(Field).delete()
+        session.query(Category).delete()
         # Water Fountain, the class.
-        wf = sa.Category()
+        wf = Category()
         wf.name = "Water Fountain"
         wf.icon = "https://karel.pw/water.png"
         session.add(wf)
         session.commit()
         # coldness
-        cd = sa.Field()
+        cd = Field()
         cd.name = "Coldness"
         cd.slug = "coldness"
         cd.type = FieldType.RATING
         cd.category_id = wf.id
         # filler
-        fl = sa.Field()
+        fl = Field()
         fl.slug = "bottle_filler"
         fl.name = "Has Bottle Filler"
         fl.type = FieldType.BOOLEAN
@@ -48,7 +48,7 @@ def test_data():
         session.add(fl)
         session.commit()
         # an actual instance!
-        fn = sa.Point()
+        fn = Point()
         fn.name = None
         fn.lat = 38.829791
         fn.lon = -77.307043
@@ -66,7 +66,27 @@ def test_data():
         }
         session.add(fn)
         session.commit()
-        return "Success!"
+        return redirect('/')
+
+
+@app.route('/category/<id>')
+def get_category(id):
+    with session_context() as session:
+        result = session.query(Category).filter_by(id=id).first()
+        if result:
+            return jsonify(result.as_json())
+        else:
+            abort(404)
+
+
+@app.route('/point/<id>')
+def get_point(id):
+    with session_context() as session:
+        result = session.query(Point).filter_by(id=id).first()
+        if result:
+            return jsonify(result.as_json())
+        else:
+            abort(404)
 
 
 if __name__ == '__main__':
