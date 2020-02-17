@@ -19,7 +19,7 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 import sys, os
 sys.path.append(os.getcwd())
-from where.sa import Base
+from where.model.sa import Base
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

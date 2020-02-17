@@ -2,14 +2,15 @@ from contextlib import contextmanager
 
 from sqlalchemy import String, ForeignKey, Enum, Integer, Float, JSON
 from sqlalchemy.ext.declarative import as_declarative
-from sqlalchemy.orm import relationship, validates, Session
+from sqlalchemy.orm import relationship, validates
 from sqlalchemy.schema import Column
 
 from .field_types import FieldType
+from .meta import Session
 
 
 @contextmanager
-def session_context() -> Session:
+def session_context():
     session = Session()
     try:
         yield session
@@ -51,10 +52,10 @@ class Point(Base):
         for key in data:
             # Find Field object that corresponds to this key
             for field in fields:
-                if field.name == key:
+                if field.slug == key:
                     break
             else:
-                raise ValueError('extra data must be a registered field')
+                raise ValueError(f'extra data "{key}" must be a registered field')
             field.validate_data(data[key])
         return data
 

@@ -1,8 +1,7 @@
 from flask import Flask
-from sqlalchemy.orm import Session
 
-from where.field_types import FieldType
-from . import sa
+from where.model import sa
+from where.model.field_types import FieldType
 
 app = Flask(__name__)
 
@@ -23,7 +22,7 @@ def index():
 @app.route('/test_data')
 def test_data():
     with sa.session_context() as session:
-        session = Session()
+        # session = Session()
         session.query(sa.Point).delete()
         session.query(sa.Field).delete()
         session.query(sa.Category).delete()
@@ -51,7 +50,10 @@ def test_data():
         # an actual instance!
         fn = sa.Point()
         fn.name = None
-        fn.category_id = wf.id
+        fn.lat = 38.829791
+        fn.lon = -77.307043
+        # fn.category_id = wf.id
+        fn.category = wf
         fn.parent_id = None
         fn.attributes = {
             "coldness": {
@@ -64,6 +66,7 @@ def test_data():
         }
         session.add(fn)
         session.commit()
+        return "Success!"
 
 
 if __name__ == '__main__':
