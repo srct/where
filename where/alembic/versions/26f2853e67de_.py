@@ -1,8 +1,8 @@
-"""inital database models
+"""empty message
 
-Revision ID: 1ef22e364966
+Revision ID: 26f2853e67de
 Revises: 
-Create Date: 2020-02-16 19:28:28.905839
+Create Date: 2020-02-16 19:33:26.275339
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '1ef22e364966'
+revision = '26f2853e67de'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,6 +27,7 @@ def upgrade():
     )
     op.create_table('field',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('slug', sa.String(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('type', sa.Enum('STRING', 'FLOAT', 'INTEGER', 'BOOLEAN', 'RATING', name='fieldtype'), nullable=False),
     sa.Column('category_id', sa.Integer(), nullable=True),

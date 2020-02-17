@@ -36,9 +36,34 @@ def test_data():
         # coldness
         cd = sa.Field()
         cd.name = "Coldness"
+        cd.slug = "coldness"
         cd.type = FieldType.RATING
         cd.category_id = wf.id
-
+        # filler
+        fl = sa.Field()
+        fl.slug = "bottle_filler"
+        fl.name = "Has Bottle Filler"
+        fl.type = FieldType.BOOLEAN
+        fl.category_id = wf.id
+        session.add(cd)
+        session.add(fl)
+        session.commit()
+        # an actual instance!
+        fn = sa.Point()
+        fn.name = None
+        fn.category_id = wf.id
+        fn.parent_id = None
+        fn.attributes = {
+            "coldness": {
+                "num_reviews": 32,
+                "average_rating": 0.5
+            },
+            "bottle_filler": {
+                "value": True
+            }
+        }
+        session.add(fn)
+        session.commit()
 
 
 if __name__ == '__main__':

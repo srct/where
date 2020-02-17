@@ -77,6 +77,7 @@ class Field(Base):
     """
     __tablename__ = 'field'
 
+    slug = Column(String, nullable=False)
     name = Column(String, nullable=False)
     type = Column(Enum(FieldType), nullable=False)
 
