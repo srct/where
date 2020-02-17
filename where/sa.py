@@ -79,7 +79,6 @@ class Field(Base):
 
     name = Column(String, nullable=False)
     type = Column(Enum(FieldType), nullable=False)
-    unit = Column(String)
 
     # Relationship
     category_id = Column(Integer, ForeignKey('category.id'))

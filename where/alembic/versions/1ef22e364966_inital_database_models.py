@@ -1,8 +1,8 @@
 """inital database models
 
-Revision ID: 24dfd0eb9da6
+Revision ID: 1ef22e364966
 Revises: 
-Create Date: 2020-02-16 19:22:25.106964
+Create Date: 2020-02-16 19:28:28.905839
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '24dfd0eb9da6'
+revision = '1ef22e364966'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,6 +21,7 @@ def upgrade():
     op.create_table('category',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(), nullable=False),
+    sa.Column('icon', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
@@ -28,7 +29,6 @@ def upgrade():
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('type', sa.Enum('STRING', 'FLOAT', 'INTEGER', 'BOOLEAN', 'RATING', name='fieldtype'), nullable=False),
-    sa.Column('unit', sa.String(), nullable=True),
     sa.Column('category_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['category_id'], ['category.id'], ),
     sa.PrimaryKeyConstraint('id')

@@ -1,6 +1,7 @@
 from flask import Flask
 from sqlalchemy.orm import Session
 
+from where.field_types import FieldType
 from . import sa
 
 app = Flask(__name__)
@@ -29,8 +30,14 @@ def test_data():
         # Water Fountain, the class.
         wf = sa.Category()
         wf.name = "Water Fountain"
-        wf.icon
+        wf.icon = "https://karel.pw/water.png"
+        session.add(wf)
+        session.commit()
         # coldness
+        cd = sa.Field()
+        cd.name = "Coldness"
+        cd.type = FieldType.RATING
+        cd.category_id = wf.id
 
 
 
