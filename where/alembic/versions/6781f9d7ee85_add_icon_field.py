@@ -1,8 +1,8 @@
-"""add coldness
+"""add icon field
 
-Revision ID: f0d89367cd54
+Revision ID: 6781f9d7ee85
 Revises: 24dfd0eb9da6
-Create Date: 2020-02-16 19:24:40.144498
+Create Date: 2020-02-16 19:25:29.011628
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'f0d89367cd54'
+revision = '6781f9d7ee85'
 down_revision = '24dfd0eb9da6'
 branch_labels = None
 depends_on = None
