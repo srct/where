@@ -29,7 +29,7 @@ class Base(object):
 
 class Point(Base):
     """
-    TODO docstring
+    Represents actual instances of any and all points on the map.
     """
     __tablename__ = 'point'
     name = Column(String, nullable=True)
@@ -62,7 +62,7 @@ class Point(Base):
 
 class Category(Base):
     """
-    Represent a schema for a single category of objects (e.g. water fountain)
+    Represent a schema for a single category of objects (e.g. water fountain or bathroom)
     """
     __tablename__ = 'category'
 
@@ -74,7 +74,7 @@ class Category(Base):
 
 class Field(Base):
     """
-    Represent a field that can be on an ObjectType schema
+    Represents a single field in the Category schema.
     """
     __tablename__ = 'field'
 
