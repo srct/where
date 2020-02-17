@@ -15,3 +15,5 @@ class FieldType(enum.Enum):
             if field not in data:
                 raise ValueError(f"Fields of type {self.name} need a {field} field")
             self.value[field](data[field])  # This will throw ValueError if it fails to validate
+        if len(data) != len(self.value):
+            raise ValueError(f"Too many fields for field of type {self.name}")

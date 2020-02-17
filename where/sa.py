@@ -1,21 +1,14 @@
-from sqlalchemy import String, ARRAY, Table, ForeignKey, Enum, Integer, Float
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import String, ForeignKey, Enum, Integer, Float, JSON
+from sqlalchemy.ext.declarative import as_declarative
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.schema import Column
 
 from .field_types import FieldType
 
 
-# TODO declarative_base
+@as_declarative()
 class Base(object):
-    # id = Column(UUID, primary_key=True, default=lambda: str(uuid.uuid4()))
     id = Column(Integer, primary_key=True, autoincrement=True)
-
-
-# This table maintains the field <-> ObjectType links.
-type_links = Table('type_links', Base.metadata,  # ???
-                   Column('type_id', Integer, ForeignKey('objecttype.id')),
-                   Column('field_id', Integer, ForeignKey('field.id')))
 
 
 class Point(Base):
@@ -26,7 +19,7 @@ class Point(Base):
     name = Column(String, nullable=True)
     lat = Column(Float, nullable=False)
     lon = Column(Float, nullable=False)
-    attributes = Column(JSONB, nullable=False)
+    attributes = Column(JSON, nullable=False)
 
     # Relationships
     category_id = Column(Integer, ForeignKey('category.id'), nullable=False)
@@ -80,8 +73,4 @@ class Field(Base):
         """
         Verify that data is the correct type for this Field.
         """
-        if type(data) is not dict:
-            raise ValueError('Input "{}" for field {} is not of type dict'.format(data, self.name))
-        print(type(data))
-        print(self.type)
-        raise ValueError('Invalid input "{}" for field {}'.format(data, self.name))
+        self.type.validate(data)
