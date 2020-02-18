@@ -2,7 +2,7 @@
     "id": 24,
     "name": null,
     "floor": 3,
-    "category": "water_fountain",
+    "category": 1,
     "parent": 1,
     "lat": 77.374695589,
     "lon": -44.89345483,
