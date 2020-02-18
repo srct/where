@@ -120,22 +120,21 @@ def get_point(session, id):
     else:
         abort(404)
 
-@app.route('/query_points', methods=['POST'])
+
+@app.route('/add-point')
+
+@app.route('/point', methods=['GET'])
 @with_session
-def query_points(session):
-    data = request.get_json()
+def search_points(session):
     q = session.query(Point)
     
-    if 'category' in data:
-        q = q.filter(Point.category_id == data['category'])
-    
-    if 'parent' in data:
-        q = q.filter(Point.parent_id == data['parent'])
+    if 'category' in request.args:
+        q = q.filter(Point.category_id == request.args.get('category'))
 
-    return jsonify(list(map(lambda p: p.as_json(), q.all())))
-    
+    if 'parent' in request.args:
+        q = q.filter(Point.parent_id == request.args.get('parent'))
 
-        
+    return jsonify(list(map(lambda p: p.as_json(), q.limit(100).all())))
 
 if __name__ == '__main__':
     app.run()
