@@ -1,7 +1,7 @@
 from flask import Flask, redirect, jsonify, abort
 
 from where.model.field_types import FieldType
-from where.model.sa import Category, Point, Field, session_context
+from where.model.sa import Category, Point, Field, with_session
 
 app = Flask(__name__)
 
@@ -20,74 +20,79 @@ def index():
 
 
 @app.route('/test_data')
-def test_data():
-    with session_context() as session:
-        # session = Session()
-        session.query(Point).delete()
-        session.query(Field).delete()
-        session.query(Category).delete()
-        # Water Fountain, the class.
-        wf = Category()
-        wf.name = "Water Fountain"
-        wf.icon = "https://karel.pw/water.png"
-        session.add(wf)
-        session.commit()
-        # coldness
-        cd = Field()
-        cd.name = "Coldness"
-        cd.slug = "coldness"
-        cd.type = FieldType.RATING
-        cd.category_id = wf.id
-        # filler
-        fl = Field()
-        fl.slug = "bottle_filler"
-        fl.name = "Has Bottle Filler"
-        fl.type = FieldType.BOOLEAN
-        fl.category_id = wf.id
-        session.add(cd)
-        session.add(fl)
-        session.commit()
-        # an actual instance!
-        fn = Point()
-        fn.name = None
-        fn.lat = 38.829791
-        fn.lon = -77.307043
-        # fn.category_id = wf.id
-        fn.category = wf
-        fn.parent_id = None
-        fn.attributes = {
-            "coldness": {
-                "num_reviews": 32,
-                "average_rating": 0.5
-            },
-            "bottle_filler": {
-                "value": True
-            }
+@with_session
+def test_data(session):
+    # session = Session()
+    session.query(Point).delete()
+    session.query(Field).delete()
+    session.query(Category).delete()
+    # Water Fountain, the class.
+    wf = Category()
+    wf.name = "Water Fountain"
+    wf.icon = "https://karel.pw/water.png"
+    session.add(wf)
+    session.commit()
+    # coldness
+    cd = Field()
+    cd.name = "Coldness"
+    cd.slug = "coldness"
+    cd.type = FieldType.RATING
+    cd.category_id = wf.id
+    # filler
+    fl = Field()
+    fl.slug = "bottle_filler"
+    fl.name = "Has Bottle Filler"
+    fl.type = FieldType.BOOLEAN
+    fl.category_id = wf.id
+    session.add(cd)
+    session.add(fl)
+    session.commit()
+    # an actual instance!
+    fn = Point()
+    fn.name = None
+    fn.lat = 38.829791
+    fn.lon = -77.307043
+    # fn.category_id = wf.id
+    fn.category = wf
+    fn.parent_id = None
+    fn.attributes = {
+        "coldness": {
+            "num_reviews": 32,
+            "average_rating": 0.5
+        },
+        "bottle_filler": {
+            "value": True
         }
-        session.add(fn)
-        session.commit()
-        return redirect('/')
+    }
+    session.add(fn)
+    session.commit()
+    return redirect('/')
 
 
 @app.route('/category/<id>')
-def get_category(id):
-    with session_context() as session:
-        result = session.query(Category).filter_by(id=id).first()
-        if result:
-            return jsonify(result.as_json())
-        else:
-            abort(404)
+@with_session
+def get_category(session, id):
+    result = session.query(Category).filter_by(id=id).first()
+    if result:
+        return jsonify(result.as_json())
+    else:
+        abort(404)
 
 
 @app.route('/point/<id>')
-def get_point(id):
-    with session_context() as session:
-        result = session.query(Point).filter_by(id=id).first()
-        if result:
-            return jsonify(result.as_json())
-        else:
-            abort(404)
+@with_session
+def get_point(session, id):
+    result = session.query(Point).filter_by(id=id).first()
+    if result:
+        return jsonify(result.as_json())
+    else:
+        abort(404)
 
+@app.route('/point', methods=['POST'])
+@with_session
+def query_point():
+    pass
+        
 
 if __name__ == '__main__':
     app.run()

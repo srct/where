@@ -21,6 +21,16 @@ def session_context():
     finally:
         session.close()
 
+# Decorator for convenience when building endpoints
+def with_session(func):
+    def wrapper(*args, **kwargs):
+        with session_context() as session:
+            func(session, *args, **kwargs)
+
+    # Flask identifies endpoint handlers based on their name
+    wrapper.__name__ = func.__name__
+    return wrapper
+
 
 @as_declarative()
 class Base(object):
