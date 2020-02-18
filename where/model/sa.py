@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship, validates
 from sqlalchemy.schema import Column
 
 from .field_types import FieldType
-from .meta import Session
+from .meta import Session, engine
 
 
 @contextmanager
@@ -25,7 +25,7 @@ def session_context():
 def with_session(func):
     def wrapper(*args, **kwargs):
         with session_context() as session:
-            func(session, *args, **kwargs)
+            return func(session, *args, **kwargs)
 
     # Flask identifies endpoint handlers based on their name
     wrapper.__name__ = func.__name__
@@ -130,3 +130,6 @@ class Field(Base):
             "name": self.name,
             "type": self.type.name
         }
+
+# uh putting this here doesn't feel right but there's not anything *too* wrong with it
+Base.metadata.create_all(engine)

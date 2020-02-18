@@ -1,4 +1,4 @@
-from flask import Flask, redirect, jsonify, abort
+from flask import Flask, redirect, jsonify, abort, request
 
 from where.model.field_types import FieldType
 from where.model.sa import Category, Point, Field, with_session
@@ -32,6 +32,21 @@ def test_data(session):
     wf.icon = "https://karel.pw/water.png"
     session.add(wf)
     session.commit()
+    # Building
+    bd = Category()
+    bd.name = "Building"
+    bd.icon = "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/basket-building-news-photo-1572015168.jpg?resize=980:*"
+    session.add(bd)
+    session.commit()
+    # Radius (Really the simplest metric we can have for building size)
+    rd = Field()
+    rd.name = "Radius"
+    rd.slug = "radius"
+    rd.type = FieldType.FLOAT
+    rd.category_id = bd.id
+    session.add(rd)
+    session.commit()
+
     # coldness
     cd = Field()
     cd.name = "Coldness"
@@ -47,14 +62,29 @@ def test_data(session):
     session.add(cd)
     session.add(fl)
     session.commit()
-    # an actual instance!
+
+    # The johnson center
+    jc = Point()
+    jc.category = bd
+    jc.name = "Johnson Center"
+    jc.lat = 38
+    jc.lon = -77
+    jc.parent = None
+    jc.attributes = {
+        "radius": {
+            "value": 2.0
+        }
+    }
+    session.add(jc)
+
+    # A water fountain inside the JC
     fn = Point()
     fn.name = None
     fn.lat = 38.829791
     fn.lon = -77.307043
     # fn.category_id = wf.id
     fn.category = wf
-    fn.parent_id = None
+    fn.parent = jc
     fn.attributes = {
         "coldness": {
             "num_reviews": 32,
@@ -64,6 +94,8 @@ def test_data(session):
             "value": True
         }
     }
+    
+
     session.add(fn)
     session.commit()
     return redirect('/')
@@ -88,10 +120,21 @@ def get_point(session, id):
     else:
         abort(404)
 
-@app.route('/point', methods=['POST'])
+@app.route('/query_points', methods=['POST'])
 @with_session
-def query_point():
-    pass
+def query_points(session):
+    data = request.get_json()
+    q = session.query(Point)
+    
+    if 'category' in data:
+        q = q.filter(Point.category_id == data['category'])
+    
+    if 'parent' in data:
+        q = q.filter(Point.parent_id == data['parent'])
+
+    return jsonify(list(map(lambda p: p.as_json(), q.all())))
+    
+
         
 
 if __name__ == '__main__':
