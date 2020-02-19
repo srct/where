@@ -59,7 +59,9 @@ class Point(Base):
     def validate_data(self, _, data):
         if data is None:
             return
+
         fields = self.category.fields
+    
         for key in data:
             # Find Field object that corresponds to this key
             for field in fields:
