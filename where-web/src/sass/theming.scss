@@ -1,0 +1,27 @@
+@import '~@angular/material/theming';
+
+@include mat-core();
+
+@import '~@angular/material/theming';
+
+$where-light-primary:   mat-palette($mat-indigo);
+$where-light-accent:    mat-palette($mat-amber, A200, A100, A400);
+$where-light-warn:      mat-palette($mat-red);
+
+$where-light-theme:     mat-light-theme($where-light-primary, $where-light-accent, $where-light-warn);
+
+
+$where-dark-primary:    mat-palette($mat-blue-grey);
+$where-dark-accent:     mat-palette($mat-amber, A200, A100, A400);
+$where-dark-warn:       mat-palette($mat-red);
+
+$where-dark-theme:      mat-dark-theme($where-dark-primary, $where-dark-accent, $where-dark-warn);
+
+
+@media (prefers-color-scheme: light) {
+    @include angular-material-theme($where-light-theme);
+}
+
+@media (prefers-color-scheme: dark) {
+    @include angular-material-theme($where-dark-theme);
+}

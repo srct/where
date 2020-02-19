@@ -6,4 +6,4 @@ export interface PointOfInterest {
     parent: number;
     lat: number;
     lon: number;
-};
+}

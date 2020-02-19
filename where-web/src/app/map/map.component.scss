@@ -1,3 +1,8 @@
 .map-root {
-    height: 650px;
+    // TODO: Don't hardcode appbar height
+    height: calc(100vh - 64px);
+    
+    @media (max-width: 599px) {
+        height: calc(100vh - 56px);
+    }
 }

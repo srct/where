@@ -1,13 +1,17 @@
 <mat-toolbar>
-    <span>Where</span>
+    <button mat-icon-button (click)="sidenav.toggle()">
+        <mat-icon>menu</mat-icon>
+    </button>
+
+    <h1>Where</h1>
 </mat-toolbar>
 
-<mat-drawer-container>
-    <mat-drawer [mode]="'side'" [opened]="true">
-        Drawyer Content
-    </mat-drawer>
+<mat-sidenav-container>
+    <mat-sidenav #sidenav [mode]="isMobile ? 'over' : 'side'" [fixedInViewport]="isMobile" [fixedTopGap]="56">
+        <app-search></app-search>
+    </mat-sidenav>
 
-    <mat-drawer-content>
+    <mat-sidenav-content>
         <app-map></app-map>
-    </mat-drawer-content>
-</mat-drawer-container>
+    </mat-sidenav-content>
+</mat-sidenav-container>

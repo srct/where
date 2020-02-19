@@ -1,0 +1,10 @@
+<form [formGroup]="form" class="search-container">
+    <mat-form-field>
+        <mat-label>Search</mat-label>
+        <input type="text" matInput [formControlName]="'search'" [matAutocomplete]="search"/>
+    </mat-form-field>
+
+    <mat-autocomplete #search="matAutocomplete">
+        <mat-option *ngFor="let option of autocompleteOptions" [value]="option">{{option}}</mat-option>
+    </mat-autocomplete>
+</form>
