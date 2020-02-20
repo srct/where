@@ -5,6 +5,14 @@ from where.model.field_types import FieldType
 
 app = Flask(__name__)
 
+def create_resource(session, model_cls, data, get_function):
+    model = model_cls(**data)
+    session.add(model)
+    session.commit()
+    response = make_response(jsonify(model.as_json()), 201)
+    response.headers['Location'] = url_for(get_function, id=model.id)
+    return response
+
 
 @app.route('/')
 def index():
@@ -122,23 +130,11 @@ def get_point(session, id):
 @app.route('/add-point', methods=['POST'])
 @with_session
 def add_point(session):
-    allowed_params = {'name', 'lat', 'lon', 'attributes', 'category_id', 'parent_id'}
     data = request.get_json()
-    data = {key: val for key, val in data.items() if key in allowed_params}
+    data['category'] = session.query(Category).get(data['category'])
+    data['parent_id'] = data.pop('parent', None)
 
-    # TODO: For some reason point.category is NULL when we do validation, even though the category ID is present
-    #       this is causing an exception whenever a non-null attributes object is passed
-    point = Point(category_id=data.pop('category_id'))
-    for key, val in data.items():
-        setattr(point, key, val)
-
-    session.add(point)
-    session.commit()
-
-    response = make_response(jsonify(point.as_json()), 201)
-    response.headers['Location'] = url_for('get_point', id=point.id)
-    return response
-
+    return create_resource(session, Point, data, 'get_point')
 
 @app.route('/point', methods=['GET'])
 @with_session

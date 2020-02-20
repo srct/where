@@ -61,12 +61,20 @@ class Point(Base):
     parent = relationship('Point', remote_side=[id])
     children = relationship('Point')
 
+    def __init__(self, **kwargs):
+        # Need to load category first or else attribute validation will fail
+        if 'category' in kwargs:
+            self.category = kwargs.pop('category')
+        
+        super(Point, self).__init__(**kwargs)
+
     @validates('attributes')
     def validate_data(self, _, data):
         if data is None:
             return
 
         fields = self.category.fields
+        print(fields[0].slug)
 
         for key in data:
             # Find Field object that corresponds to this key
