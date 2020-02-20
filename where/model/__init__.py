@@ -138,7 +138,3 @@ class Field(Base):
             "name": self.name,
             "type": self.type.name
         }
-
-
-# uh putting this here doesn't feel right but there's not anything *too* wrong with it
-Base.metadata.create_all(engine)
