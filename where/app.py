@@ -15,6 +15,11 @@ def create_resource(session, model_cls, data, get_function):
     return response
 
 
+def get_resource(session, model_cls, id):
+    resource = session.query(model_cls).get(id)
+    return make_response(jsonify(resource.as_json()), 200)
+
+
 def search_resource(session, model_cls, data):
     query = session.query(model_cls).filter_by(**data)
     results = list(map(lambda m: m.as_json(), query.limit(100).all()))
@@ -118,11 +123,7 @@ def test_data(session):
 @app.route('/category/<id>')
 @with_session
 def get_category(session, id):
-    result = session.query(Category).filter_by(id=id).first()
-    if result:
-        return jsonify(result.as_json())
-    else:
-        abort(404)
+    return get_resource(session, Category, id)
 
 
 @app.route('/category/<id>/children')
@@ -140,8 +141,7 @@ def handle_point(session):
         return search_resource(session, Point, dict(request.args))
     elif request.method == 'POST':
         data = request.get_json()
-        data['category'] = session.query(Category).get(data['category'])
-        data['parent_id'] = data.pop('parent', None)
+        data['category'] = session.query(Category).get(data.pop('category_id'))
 
         return create_resource(session, Point, data, 'get_point')
    
@@ -149,11 +149,7 @@ def handle_point(session):
 @app.route('/point/<id>', methods=['GET', 'PUT', 'DELETE'])
 @with_session
 def get_point(session, id):
-    result = session.query(Point).get(id)
-    if result:
-        return jsonify(result.as_json())
-    else:
-        abort(404)
+    return get_resource(session, Point, id)
 
 
 @app.route('/point/<id>/children', methods=['GET'])
@@ -162,6 +158,7 @@ def get_point_children(session, id):
     data = dict(request.args)
     data['parent_id'] = id
     return search_resource(session, Point, data)
+
 
 if __name__ == '__main__':
     app.run()
