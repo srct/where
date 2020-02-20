@@ -1,8 +1,7 @@
-from flask import Flask, redirect, jsonify, abort, request, url_for, Response, make_response
-from werkzeug.datastructures import Headers
+from flask import Flask, redirect, jsonify, abort, request, url_for, make_response
 
+from where.model import with_session, Point, Category, Field
 from where.model.field_types import FieldType
-from where.model.sa import Category, Point, Field, with_session
 
 app = Flask(__name__)
 
@@ -23,7 +22,6 @@ def index():
 @app.route('/test_data')
 @with_session
 def test_data(session):
-    # session = Session()
     session.query(Point).delete()
     session.query(Field).delete()
     session.query(Category).delete()
@@ -95,7 +93,6 @@ def test_data(session):
             "value": True
         }
     }
-    
 
     session.add(fn)
     session.commit()
@@ -127,8 +124,8 @@ def get_point(session, id):
 def add_point(session):
     allowed_params = {'name', 'lat', 'lon', 'attributes', 'category_id', 'parent_id'}
     data = request.get_json()
-    data = {key:val for key, val in data.items() if key in allowed_params}
-    
+    data = {key: val for key, val in data.items() if key in allowed_params}
+
     # TODO: For some reason point.category is NULL when we do validation, even though the category ID is present
     #       this is causing an exception whenever a non-null attributes object is passed
     point = Point(category_id=data.pop('category_id'))
@@ -147,7 +144,7 @@ def add_point(session):
 @with_session
 def search_points(session):
     q = session.query(Point)
-    
+
     if 'category_id' in request.args:
         q = q.filter(Point.category_id == request.args.get('category_id'))
 
