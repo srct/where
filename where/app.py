@@ -5,12 +5,20 @@ from where.model.field_types import FieldType
 
 app = Flask(__name__)
 
+
 def create_resource(session, model_cls, data, get_function):
     model = model_cls(**data)
     session.add(model)
     session.commit()
     response = make_response(jsonify(model.as_json()), 201)
     response.headers['Location'] = url_for(get_function, id=model.id)
+    return response
+
+
+def search_resource(session, model_cls, data):
+    query = session.query(model_cls).filter_by(**data)
+    results = list(map(lambda m: m.as_json(), query.limit(100).all()))
+    response = make_response(jsonify(results), 200)
     return response
 
 
@@ -117,38 +125,43 @@ def get_category(session, id):
         abort(404)
 
 
-@app.route('/point/<id>')
+@app.route('/category/<id>/children')
+@with_session
+def get_category_children(session, id):
+    data = dict(request.args)
+    data['parent_id'] = id
+    return search_resource(session, Point, data)
+
+
+@app.route('/point', methods=['GET', 'POST'])
+@with_session
+def handle_point(session):
+    if request.method == 'GET':
+        return search_resource(session, Point, dict(request.args))
+    elif request.method == 'POST':
+        data = request.get_json()
+        data['category'] = session.query(Category).get(data['category'])
+        data['parent_id'] = data.pop('parent', None)
+
+        return create_resource(session, Point, data, 'get_point')
+   
+
+@app.route('/point/<id>', methods=['GET', 'PUT', 'DELETE'])
 @with_session
 def get_point(session, id):
-    result = session.query(Point).filter_by(id=id).first()
+    result = session.query(Point).get(id)
     if result:
         return jsonify(result.as_json())
     else:
         abort(404)
 
 
-@app.route('/add-point', methods=['POST'])
+@app.route('/point/<id>/children', methods=['GET'])
 @with_session
-def add_point(session):
-    data = request.get_json()
-    data['category'] = session.query(Category).get(data['category'])
-    data['parent_id'] = data.pop('parent', None)
-
-    return create_resource(session, Point, data, 'get_point')
-
-@app.route('/point', methods=['GET'])
-@with_session
-def search_points(session):
-    q = session.query(Point)
-
-    if 'category_id' in request.args:
-        q = q.filter(Point.category_id == request.args.get('category_id'))
-
-    if 'parent_id' in request.args:
-        q = q.filter(Point.parent_id == request.args.get('parent_id'))
-
-    return jsonify(list(map(lambda p: p.as_json(), q.limit(100).all())))
-
+def get_point_children(session, id):
+    data = dict(request.args)
+    data['parent_id'] = id
+    return search_resource(session, Point, data)
 
 if __name__ == '__main__':
     app.run()
