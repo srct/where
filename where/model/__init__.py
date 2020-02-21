@@ -74,7 +74,6 @@ class Point(Base):
             return
 
         fields = self.category.fields
-        print(fields[0].slug)
 
         for key in data:
             # Find Field object that corresponds to this key
