@@ -6,25 +6,7 @@ from where.model.field_types import FieldType
 app = Flask(__name__)
 
 
-def create_resource(session, model_cls, data, get_function):
-    model = model_cls(**data)
-    session.add(model)
-    session.commit()
-    response = make_response(jsonify(model.as_json()), 201)
-    response.headers['Location'] = url_for(get_function, id=model.id)
-    return response
-
-
-def get_resource(session, model_cls, id):
-    resource = session.query(model_cls).get(id)
-    return make_response(jsonify(resource.as_json()), 200)
-
-
-def search_resource(session, model_cls, data):
-    query = session.query(model_cls).filter_by(**data)
-    results = list(map(lambda m: m.as_json(), query.limit(100).all()))
-    response = make_response(jsonify(results), 200)
-    return response
+# Endpoints:
 
 
 @app.route('/')
@@ -149,7 +131,12 @@ def handle_point(session):
 @app.route('/point/<id>', methods=['GET', 'PUT', 'DELETE'])
 @with_session
 def get_point(session, id):
-    return get_resource(session, Point, id)
+    if request.method == 'GET':
+        return get_resource(session, Point, id)
+    elif request.method == 'DELETE':
+        return delete_resource(session, Point, id)
+    elif request.method == 'PUT':
+        return edit_resource(session, Point, id, request.get_json())
 
 
 @app.route('/point/<id>/children', methods=['GET'])
@@ -158,6 +145,72 @@ def get_point_children(session, id):
     data = dict(request.args)
     data['parent_id'] = id
     return search_resource(session, Point, data)
+
+
+# Helper functions:
+# TODO: Add helper functions for data validation
+
+
+def create_resource(session, model_cls, data, get_function):
+    '''
+    Create the resource specified by the given model class and initialized with the data
+    dict and return an appropriate JSON response. 'get_function' is the name of the function
+    for the endpoint that the user will be be provided in the location header.
+    Does not perform data validation.
+    '''
+    resource = model_cls(**data)
+    session.add(resource)
+    session.commit()
+
+    response = make_response(jsonify(resource.as_json()), 201)
+    response.headers['Location'] = url_for(get_function, id=resource.id)
+    return response
+
+
+def get_resource(session, model_cls, id):
+    '''
+    Get a single resource of the specified model class by its ID
+    '''
+    resource = session.query(model_cls).get(id)
+    return make_response(jsonify(resource.as_json()), 200)
+
+
+def edit_resource(session, model_cls, id, data):
+    '''
+    Modify the resource of the specified model class and id with the data from
+    data. Does not perform data validation.
+    '''
+    resource = session.query(model_cls).get(id)
+    for attr in data:
+        setattr(resource, attr, data[attr])
+    session.commit()
+
+    return make_response(jsonify(resource.as_json()), 200)
+
+
+def delete_resource(session, model_cls, id):
+    '''
+    Delete the resource of the specified model class and id and return the 
+    appropriate response.
+    '''
+    resource = session.query(model_cls).get(id)
+    session.delete(resource)
+    session.commit()
+
+    return make_response('', 204)
+
+
+def search_resource(session, model_cls, data):
+    '''
+    Search the database for a list of instances of the specified model class
+    that have the attributes given in data and return the appropriate JSON
+    response. Does not perform data validation.
+    '''
+    query = session.query(model_cls).filter_by(**data)
+    results = list(map(lambda m: m.as_json(), query.limit(100).all()))
+
+    response = make_response(jsonify(results), 200)
+    return response
 
 
 if __name__ == '__main__':
