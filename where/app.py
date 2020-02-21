@@ -154,9 +154,13 @@ def get_point_children(session, id):
 def create_resource(session, model_cls, data, get_function):
     '''
     Create the resource specified by the given model class and initialized with the data
-    dict and return an appropriate JSON response. 'get_function' is the name of the function
-    for the endpoint that the user will be be provided in the location header.
-    Does not perform data validation.
+    dict and return an appropriate JSON response. 
+
+    :param session: The sqlalchemy session
+    :param model_cls: The class of the model for this resource
+    :param data: The initial data for this resource stored as a dictionary
+    :param get_function: The name of the view function (as a string) that gets a single instance of this resource. This is used for the response Location header.
+    :return: a Flask Response object
     '''
     resource = model_cls(**data)
     session.add(resource)
@@ -169,7 +173,12 @@ def create_resource(session, model_cls, data, get_function):
 
 def get_resource(session, model_cls, id):
     '''
-    Get a single resource of the specified model class by its ID
+    Get a single resource of the specified model class by its ID.
+    
+    :param session: The sqlalchemy session
+    :param model_cls: The class of the model for this resource
+    :param id: The id of this resource
+    :return: a Flask Response object
     '''
     resource = session.query(model_cls).get(id)
     return make_response(jsonify(resource.as_json()), 200)
@@ -179,6 +188,12 @@ def edit_resource(session, model_cls, id, data):
     '''
     Modify the resource of the specified model class and id with the data from
     data. Does not perform data validation.
+
+    :param session: The sqlalchemy session
+    :param model_cls: The class of the model for this resource
+    :param id: The id of this resource
+    :param data: The new data for this resource stored as a dictionary
+    :return: a Flask Response object
     '''
     resource = session.query(model_cls).get(id)
     for attr in data:
@@ -192,6 +207,11 @@ def delete_resource(session, model_cls, id):
     '''
     Delete the resource of the specified model class and id and return the 
     appropriate response.
+
+    :param session: The sqlalchemy session
+    :param model_cls: The class of the model for this resource
+    :param id: The id of this resource
+    :return: a Flask Response object
     '''
     resource = session.query(model_cls).get(id)
     session.delete(resource)
@@ -204,7 +224,12 @@ def search_resource(session, model_cls, data):
     '''
     Search the database for a list of instances of the specified model class
     that have the attributes given in data and return the appropriate JSON
-    response. Does not perform data validation.
+    response. Does not perform validation on search parameters.
+
+    :param session: The sqlalchemy session
+    :param model_cls: The class of the model for this resource
+    :param data: A dictionary containing search parameters
+    :return: a Flask Response object
     '''
     query = session.query(model_cls).filter_by(**data)
     results = list(map(lambda m: m.as_json(), query.limit(100).all()))
