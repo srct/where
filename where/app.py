@@ -154,7 +154,7 @@ def get_point_children(session, id):
 def create_resource(session, model_cls, data, get_function):
     '''
     Create the resource specified by the given model class and initialized with the data
-    dict and return an appropriate JSON response. 
+    dict, returning an appropriate JSON response. 
 
     :param session: The sqlalchemy session
     :param model_cls: The class of the model for this resource
