@@ -1,4 +1,6 @@
 from flask import Flask, redirect, jsonify, abort, request, url_for, make_response
+from webargs.flaskparser import use_args
+from webargs import fields
 
 from where.model import with_session, Point, Category, Field
 from where.model.field_types import FieldType
@@ -6,7 +8,6 @@ from where.model.field_types import FieldType
 from where.validation import PointSchema, CategorySchema, FieldSchema
 
 app = Flask(__name__)
-
 
 # Endpoints:
 
@@ -112,24 +113,25 @@ def get_category(session, id):
 
 @app.route('/category/<id>/children')
 @with_session
-def get_category_children(session, id):
+def get_category_children(data, session, id):
     data = dict(request.args)
     data['parent_id'] = id
     return search_resource(session, Point, data)
 
 
 @app.route('/point', methods=['GET'])
+@use_args({'parent_id': fields.Int(), 'category_id': fields.Int(required=True)})
 @with_session
-def search_point(session):
-    return search_resource(session, Point, dict(request.args))
+def search_point(session, args):
+    return search_resource(session, Point, args)
 
 
 @app.route('/point', methods=['POST'])
-def create_point(session):
-    data = request.get_json()
-    data['category'] = session.query(Category).get(data.pop('category_id'))
-
-    return create_resource(session, Point, data, 'get_point')
+@use_args(PointSchema)
+@with_session
+def create_point(session, args):
+    args['category'] = session.query(Category).get(args.pop('category_id'))
+    return create_resource(session, Point, args, 'get_point')
    
 
 @app.route('/point/<id>', methods=['GET'])
