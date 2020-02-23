@@ -3,6 +3,8 @@ from flask import Flask, redirect, jsonify, abort, request, url_for, make_respon
 from where.model import with_session, Point, Category, Field
 from where.model.field_types import FieldType
 
+from where.validation import PointSchema, CategorySchema, FieldSchema
+
 app = Flask(__name__)
 
 
@@ -116,27 +118,36 @@ def get_category_children(session, id):
     return search_resource(session, Point, data)
 
 
-@app.route('/point', methods=['GET', 'POST'])
+@app.route('/point', methods=['GET'])
 @with_session
-def handle_point(session):
-    if request.method == 'GET':
-        return search_resource(session, Point, dict(request.args))
-    elif request.method == 'POST':
-        data = request.get_json()
-        data['category'] = session.query(Category).get(data.pop('category_id'))
+def search_point(session):
+    return search_resource(session, Point, dict(request.args))
 
-        return create_resource(session, Point, data, 'get_point')
+
+@app.route('/point', methods=['POST'])
+def create_point(session):
+    data = request.get_json()
+    data['category'] = session.query(Category).get(data.pop('category_id'))
+
+    return create_resource(session, Point, data, 'get_point')
    
 
-@app.route('/point/<id>', methods=['GET', 'PUT', 'DELETE'])
+@app.route('/point/<id>', methods=['GET'])
 @with_session
 def get_point(session, id):
-    if request.method == 'GET':
-        return get_resource(session, Point, id)
-    elif request.method == 'DELETE':
-        return delete_resource(session, Point, id)
-    elif request.method == 'PUT':
-        return edit_resource(session, Point, id, request.get_json())
+    return get_resource(session, Point, id)
+
+
+@app.route('/point/<id>', methods=['DELETE'])
+@with_session
+def del_point(session, id):
+    return delete_resource(session, Point, id)
+
+
+@app.route('/point/<id>', methods=['PUT'])
+@with_session
+def edit_point(session, id):
+    return edit_resource(session, Point, id, request.get_json())
 
 
 @app.route('/point/<id>/children', methods=['GET'])
