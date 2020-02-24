@@ -246,6 +246,8 @@ def search_resource(session, model_cls, data):
     :param data: A dictionary containing search parameters
     :return: a Flask Response object
     '''
+
+    # TODO: returns 404 when accessing children - i think it should just return an empty array
     query = session.query(model_cls).filter_by(**data)
     resp = (None, 404) if query.first() is None else \
         (list(map(lambda m: m.as_json(), query.limit(100).all())), 200)
