@@ -105,13 +105,13 @@ def test_data(session):
     return redirect('/')
 
 
-@app.route('/category/<id>')
+@app.route('/category/<int:id>')
 @with_session
 def get_category(session, id):
     return get_resource(session, Category, id)
 
 
-@app.route('/category/<id>/children')
+@app.route('/category/<int:id>/children')
 @with_session
 def get_category_children(data, session, id):
     data = dict(request.args)
