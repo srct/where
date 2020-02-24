@@ -34,6 +34,7 @@ class Point(Base):
         
         super(Point, self).__init__(**kwargs)
 
+
     @validates('attributes')
     def validate_data(self, _, data):
         if data is None:
@@ -51,18 +52,6 @@ class Point(Base):
             field.validate_data(data[key])
         return data
 
-    def as_json(self, children=True):
-        if children:
-            children = [child.as_json(children=False) for child in self.children]
-        return {
-            "name": self.name,
-            "lat": self.lat,
-            "lon": self.lon,
-            "category": self.category.id,
-            "attributes": self.attributes,
-            "children": children
-        }
-
 
 class Category(Base):
     """
@@ -75,14 +64,6 @@ class Category(Base):
     icon = Column(String, nullable=True)
 
     fields = relationship("Field")
-
-    def as_json(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "icon": self.icon,
-            "attributes": {attr.slug: attr.as_json() for attr in self.fields}
-        }
 
 
 class Field(Base):
@@ -104,10 +85,3 @@ class Field(Base):
         Verify that data is the correct type for this Field.
         """
         self.type.validate(data)
-
-    def as_json(self):
-        return {
-            "slug": self.slug,
-            "name": self.name,
-            "type": self.type.name
-        }
