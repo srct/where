@@ -1,4 +1,4 @@
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields
 from .model import Point, Category, Field, Session
 
 class BaseSchema(SQLAlchemyAutoSchema):
@@ -8,6 +8,8 @@ class BaseSchema(SQLAlchemyAutoSchema):
 
 
 class PointSchema(BaseSchema):
+    children = fields.Nested('PointSchema', exclude=('children',), many=True)
+
     class Meta(BaseSchema.Meta):
         model = Point
 
