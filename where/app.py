@@ -247,6 +247,8 @@ def search_resource(schema, data):
     :param data: A dictionary containing search parameters
     :return: a Flask Response object
     '''
+
+    # TODO: returns 404 when accessing children - i think it should just return an empty array
     query = g.db_session.query(schema.Meta.model).filter_by(**data)
     resp = (None, 404) if query.first() is None else \
         (schema.dump(query.all(), many=True), 200)
