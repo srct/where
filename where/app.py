@@ -29,6 +29,7 @@ def destroy_local_db_session(resp):
 
 @app.route('/')
 def index():
+    print(PointSchema().Meta.model)
     return """
 <head>
 </head>
@@ -121,55 +122,55 @@ def test_data():
 
 @app.route('/category/<int:id>')
 def get_category(id):
-    return get_resource(Category, id)
+    return get_resource(CategorySchema(), id)
 
 
 @app.route('/category/<int:id>/children')
 def get_category_children(data, id):
     data = dict(request.args)
     data['parent_id'] = id
-    return search_resource(Point, data)
+    return search_resource(PointSchema(), data)
 
 
 @app.route('/point', methods=['GET'])
 @use_args({'parent_id': fields.Int(), 'category_id': fields.Int(required=True)})
 def search_point(args):
-    return search_resource(Point, args)
+    return search_resource(PointSchema(), args)
 
 
 @app.route('/point', methods=['POST'])
 @use_args(PointSchema)
 def create_point(args):
-    args['category'] = g.db_session.query(Category).get(args.pop('category_id'))
-    return create_resource(Point, args, 'get_point')
+    return create_resource(PointSchema(), args, 'get_point')
    
 
 @app.route('/point/<int:id>', methods=['GET'])
 def get_point(id):
-    return get_resource(Point, id)
+    return get_resource(PointSchema(), id)
 
 
 @app.route('/point/<int:id>', methods=['DELETE'])
 def del_point(id):
-    return delete_resource(Point, id)
+    return delete_resource(PointSchema(), id)
 
 
+#TODO: Validate this
 @app.route('/point/<int:id>', methods=['PUT'])
 def edit_point(id):
-    return edit_resource(Point, id, request.get_json())
+    return edit_resource(PointSchema(), id, request.get_json())
 
 
 @app.route('/point/<int:id>/children', methods=['GET'])
 def get_point_children(id):
     data = dict(request.args)
     data['parent_id'] = id
-    return search_resource(Point, data)
+    return search_resource(PointSchema(), data)
 
 
 # Helper functions:
 
 
-def create_resource(model_cls, data, get_function):
+def create_resource(schema, data, get_function):
     '''
     Create the resource specified by the given model class and initialized with the data
     dict, returning an appropriate JSON response. 
@@ -179,16 +180,16 @@ def create_resource(model_cls, data, get_function):
     :param get_function: The name of the view function (as a string) that gets a single instance of this resource. This is used for the response Location header.
     :return: a Flask Response object
     '''
-    resource = model_cls(**data)
+    resource = schema.Meta.model(**data)
     g.db_session.add(resource)
     g.db_session.commit()
 
-    response = make_response(jsonify(resource.as_json()), 201)
+    response = make_response(schema.dump(resource, many=False), 201)
     response.headers['Location'] = url_for(get_function, id=resource.id)
     return response
 
 
-def get_resource(model_cls, id):
+def get_resource(schema, id):
     '''
     Get a single resource of the specified model class by its ID.
     
@@ -196,13 +197,13 @@ def get_resource(model_cls, id):
     :param id: The id of this resource
     :return: a Flask Response object
     '''
-    resource = g.db_session.query(model_cls).get(id)
+    resource = g.db_session.query(schema.Meta.model).get(id)
     resp = (None, 404) if resource is None else \
-        (resource.as_json(), 200)
-    return make_response(jsonify(resp[0]), resp[1])
+        (schema.dump(resource, many=False), 200)
+    return make_response(resp)
 
 
-def edit_resource(model_cls, id, data):
+def edit_resource(schema, id, data):
     '''
     Modify the resource of the specified model class and id with the data from
     data. Does not perform data validation.
@@ -212,15 +213,15 @@ def edit_resource(model_cls, id, data):
     :param data: The new data for this resource stored as a dictionary
     :return: a Flask Response object
     '''
-    resource = g.db_session.query(model_cls).get(id)
+    resource = g.db_session.query(schema.Meta.model).get(id)
     for attr in data:
         setattr(resource, attr, data[attr])
     g.db_session.commit()
 
-    return make_response(jsonify(resource.as_json()), 200)
+    return make_response(schema.dump(resource), 200)
 
 
-def delete_resource(model_cls, id):
+def delete_resource(schema, id):
     '''
     Delete the resource of the specified model class and id and return the 
     appropriate response.
@@ -229,14 +230,14 @@ def delete_resource(model_cls, id):
     :param id: The id of this resource
     :return: a Flask Response object
     '''
-    resource = g.db_session.query(model_cls).get(id)
+    resource = g.db_session.query(schema.Meta.model).get(id)
     g.db_session.delete(resource)
     g.db_session.commit()
 
     return make_response('', 204)
 
 
-def search_resource(model_cls, data):
+def search_resource(schema, data):
     '''
     Search the database for a list of instances of the specified model class
     that have the attributes given in data and return the appropriate JSON
@@ -246,11 +247,11 @@ def search_resource(model_cls, data):
     :param data: A dictionary containing search parameters
     :return: a Flask Response object
     '''
-    query = g.db_session.query(model_cls).filter_by(**data)
+    query = g.db_session.query(schema.Meta.model).filter_by(**data)
     resp = (None, 404) if query.first() is None else \
-        (list(map(lambda m: m.as_json(), query.limit(100).all())), 200)
+        (schema.dump(query.all(), many=True), 200)
 
-    return make_response(jsonify(resp[0]), resp[1])
+    return make_response(resp)
 
 
 if __name__ == '__main__':

@@ -1,23 +1,23 @@
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field
-from .model import Point, Category, Field
+from .model import Point, Category, Field, Session
 
-class PointSchema(SQLAlchemyAutoSchema):
+class BaseSchema(SQLAlchemyAutoSchema):
     class Meta:
+        include_relationships = True
+        sqla_session = Session
+
+
+class PointSchema(BaseSchema):
+    class Meta(BaseSchema.Meta):
         model = Point
-        include_fk = True
-        include_relationships = False
-        load_instance = False
 
 
-class CategorySchema(SQLAlchemyAutoSchema):
-    class Meta:
+class CategorySchema(BaseSchema):
+    class Meta(BaseSchema.Meta):
         model = Category
-        include_relationships = False
-        load_instance = False
 
 
-class FieldSchema(SQLAlchemyAutoSchema):
-    class Meta:
+class FieldSchema(BaseSchema):
+    class Meta(BaseSchema.Meta):
         model = Field
-        include_relationships = False
-        load_instance = False
+
