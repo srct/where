@@ -134,25 +134,25 @@ def create_point(session, args):
     return create_resource(session, Point, args, 'get_point')
    
 
-@app.route('/point/<id>', methods=['GET'])
+@app.route('/point/<int:id>', methods=['GET'])
 @with_session
 def get_point(session, id):
     return get_resource(session, Point, id)
 
 
-@app.route('/point/<id>', methods=['DELETE'])
+@app.route('/point/<int:id>', methods=['DELETE'])
 @with_session
 def del_point(session, id):
     return delete_resource(session, Point, id)
 
 
-@app.route('/point/<id>', methods=['PUT'])
+@app.route('/point/<int:id>', methods=['PUT'])
 @with_session
 def edit_point(session, id):
     return edit_resource(session, Point, id, request.get_json())
 
 
-@app.route('/point/<id>/children', methods=['GET'])
+@app.route('/point/<int:id>/children', methods=['GET'])
 @with_session
 def get_point_children(session, id):
     data = dict(request.args)
@@ -194,7 +194,9 @@ def get_resource(session, model_cls, id):
     :return: a Flask Response object
     '''
     resource = session.query(model_cls).get(id)
-    return make_response(jsonify(resource.as_json()), 200)
+    resp = (None, 404) if resource is None else \
+        (resource.as_json(), 200)
+    return make_response(jsonify(resp[0]), resp[1])
 
 
 def edit_resource(session, model_cls, id, data):
@@ -245,10 +247,10 @@ def search_resource(session, model_cls, data):
     :return: a Flask Response object
     '''
     query = session.query(model_cls).filter_by(**data)
-    results = list(map(lambda m: m.as_json(), query.limit(100).all()))
+    resp = (None, 404) if query.first() is None else \
+        (list(map(lambda m: m.as_json(), query.limit(100).all())), 200)
 
-    response = make_response(jsonify(results), 200)
-    return response
+    return make_response(jsonify(resp[0]), resp[1])
 
 
 if __name__ == '__main__':
