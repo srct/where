@@ -19,8 +19,12 @@ class FieldType(enum.Enum):
 
         This method throws a ValueError if the passed value doesn't conform to the
         schema.
-        :param data: the instance of this primitive to validate.
-        :raises ValueError: if the passed data is incorrect
+
+        Parameters:
+        data (): the instance of this primitive to validate.
+        
+        Raises:
+        ValueError: if the passed data is incorrect
         """
         if type(data) is not dict:
             raise ValueError("YA DONE GOOFED. NEED A DICT.")

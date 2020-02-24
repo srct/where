@@ -175,10 +175,13 @@ def create_resource(schema, data, get_function):
     Create the resource specified by the given model class and initialized with the data
     dict, returning an appropriate JSON response. 
 
-    :param model_cls: The class of the model for this resource
-    :param data: The initial data for this resource stored as a dictionary
-    :param get_function: The name of the view function (as a string) that gets a single instance of this resource. This is used for the response Location header.
-    :return: a Flask Response object
+    Parameters:
+    schema       (object): The class of the model for this resource
+    data         (dict)  : The initial data for this resource stored as a dictionary
+    get_function (string): The name of the view function (as a string) that gets a single 
+                           instance of this resource. This is used for the response Location header.
+    
+    Returns: a Flask Response object
     '''
     resource = schema.Meta.model(**data)
     g.db_session.add(resource)
@@ -193,9 +196,11 @@ def get_resource(schema, id):
     '''
     Get a single resource of the specified model class by its ID.
     
-    :param model_cls: The class of the model for this resource
-    :param id: The id of this resource
-    :return: a Flask Response object
+    Parameters:
+    schema  (object): The class of the model for this resource
+    id      (int)   : The id of this resource
+    
+    Returns: a Flask Response object
     '''
     resource = g.db_session.query(schema.Meta.model).get(id)
     resp = (None, 404) if resource is None else \
@@ -208,10 +213,12 @@ def edit_resource(schema, id, data):
     Modify the resource of the specified model class and id with the data from
     data. Does not perform data validation.
 
-    :param model_cls: The class of the model for this resource
-    :param id: The id of this resource
-    :param data: The new data for this resource stored as a dictionary
-    :return: a Flask Response object
+    Parameters:
+    schema  (object): The class of the model for this resource
+    id      (int)   : The id of this resource
+    data    (dict)  : The new data for this resource stored as a dictionary
+    
+    Returns: a Flask Response object
     '''
     resource = g.db_session.query(schema.Meta.model).get(id)
     for attr in data:
@@ -226,9 +233,11 @@ def delete_resource(schema, id):
     Delete the resource of the specified model class and id and return the 
     appropriate response.
 
-    :param model_cls: The class of the model for this resource
-    :param id: The id of this resource
-    :return: a Flask Response object
+    Parameters:
+    schema  (object): The class of the model for this resource
+    id      (int)   : The id of this resource
+    
+    Returns: a Flask Response object
     '''
     resource = g.db_session.query(schema.Meta.model).get(id)
     g.db_session.delete(resource)
@@ -243,9 +252,12 @@ def search_resource(schema, data):
     that have the attributes given in data and return the appropriate JSON
     response. Does not perform validation on search parameters.
 
-    :param model_cls: The class of the model for this resource
-    :param data: A dictionary containing search parameters
-    :return: a Flask Response object
+    Parameters:
+    schema  (object): The class of the model for this resource
+    data    (dict)  : A dictionary containing search parameters
+    
+    Returns:
+    a Flask Response object
     '''
 
     # TODO: returns 404 when accessing children - i think it should just return an empty array
