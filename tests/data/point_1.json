@@ -1,0 +1,32 @@
+{
+  "attributes": {
+    "radius": {
+      "value": 2
+    }
+  },
+  "category": 2,
+  "children": [
+    {
+      "attributes": {
+        "bottle_filler": {
+          "value": true
+        },
+        "coldness": {
+          "average_rating": 0.5,
+          "num_reviews": 32
+        }
+      },
+      "category": 1,
+      "id": 2,
+      "lat": 38.829791,
+      "lon": -77.307043,
+      "name": null,
+      "parent": 1
+    }
+  ],
+  "id": 1,
+  "lat": 38,
+  "lon": -77,
+  "name": "Johnson Center",
+  "parent": null
+}
