@@ -53,8 +53,8 @@ def setup(test_num):
     '''
     Tests the endpoint /test_data with valid input
     '''
-    endpoint = "/test_data"
-    print_test(test_num, endpoint)
+    endpoint = "test_data"
+    print_test(test_num, f"/{endpoint}")
     print("Method: " + colored("GET", "yellow"))
 
     data = requests.get(f"http://localhost:5000/{endpoint}")
