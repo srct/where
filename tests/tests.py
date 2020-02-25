@@ -1,14 +1,14 @@
+
+# standard imports
+from termcolor import colored
+
 import requests
 import json
 import os
 
-from colorama import init, Fore, Style
-from termcolor import colored
-
+# custom module imports
 from codes import *
 
-# initialize terminal colors
-init()
 
 def get_status(expected, actual):
     '''
@@ -29,14 +29,8 @@ def get_status(expected, actual):
     status = colored("failed", "red") if not success else \
         colored("success", "green")
 
-    print(f"Status: {status}")
-    if not success:
-        # expected = [str(e) for e in expected]
-        # actual = [str(a) for a in actual]
-        # print(colored(f"Test: {expected}\nActual: {actual}\n", "red")) 
-        print(msg)
-
-    print("\n")
+    print(f"Test: {status}")
+    print(f"{msg}\n" if not success else "\n")
     return success
 
 def print_test(test_num, endpoint):
@@ -59,7 +53,6 @@ def setup(test_num):
 
     data = requests.get(f"http://localhost:5000/{endpoint}")
     expected = [SUCCESS, REDIRECT]
-    print(data.history[0].status_code)
     actual = [ codes[data.status_code], codes[data.history[0].status_code] ]
 
     return get_status(expected, actual)
@@ -91,10 +84,8 @@ def valid_point(test_num):
     try:
         js_path = os.path.join(os.path.dirname(__file__), "data", "point_1.json")
 
-        actual = [codes[data.status_code], 
-            list(data.json().keys())]
-        expected = [SUCCESS, 
-            list(json.loads(open(js_path).read()).keys())]
+        actual = [codes[data.status_code], list(data.json().keys())]
+        expected = [SUCCESS, list(json.loads(open(js_path).read()).keys())]
 
         return get_status(expected, actual)
 
