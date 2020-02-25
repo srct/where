@@ -15,7 +15,6 @@ MarkupSafe==1.1.1
 marshmallow==3.5.0
 marshmallow-sqlalchemy==0.22.2
 mo-future==3.47.20042
-pkg-resources==0.0.0
 pyparsing==2.3.1
 pyrsistent==0.15.7
 python-dateutil==2.8.1
