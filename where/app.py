@@ -43,7 +43,8 @@ def index():
 
 @app.route('/test-data')
 def test_data():
-    import where.test_data
+    import where.test_data as t
+    t.create_test_data()
     return redirect('/') 
 
 
