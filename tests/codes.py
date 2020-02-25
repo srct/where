@@ -12,7 +12,7 @@ CREATED = Code(201, "Created")
 
 # redirection
 MOVED = Code(301, "Moved Permanently")
-REDIRECT = Code(308, "Permanent Redirect")
+REDIRECT = Code(302, "Permanent Redirect")
 
 # client errors
 BAD_REQUEST = Code(400, "Bad Request")
@@ -28,7 +28,7 @@ codes = {
     200: SUCCESS,
     201: CREATED,
     301: MOVED, 
-    308: REDIRECT,
+    302: REDIRECT,
     400: BAD_REQUEST,
     401: UNAUTHORIZED,
     403: FORBIDDEN,

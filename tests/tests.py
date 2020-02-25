@@ -59,6 +59,7 @@ def setup(test_num):
 
     data = requests.get(f"http://localhost:5000/{endpoint}")
     expected = [SUCCESS, REDIRECT]
+    print(data.history[0].status_code)
     actual = [ codes[data.status_code], codes[data.history[0].status_code] ]
 
     return get_status(expected, actual)
