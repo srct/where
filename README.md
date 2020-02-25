@@ -4,7 +4,11 @@ Find stuff at GMU
 ## Get Started
 
 The backend is written with [Flask](https://flask.palletsprojects.com/en/1.1.x/), a lightweight Python framework for web services.    
-To run the backend, first download the dependencies with `pip install -r requirements.txt` in the base directory, then set the `FLASK_APP` environment variable.  
+To run the backend:
+*  Create and activate a Python virtual environment (optional)
+*  Download the dependencies with `pip install -r requirements.txt` in the base directory
+*  Create the development database by running `alembic upgrade head`
+*  Set the `FLASK_APP` environmental variable:
 
 On Mac or Linux:
 ```
@@ -18,7 +22,8 @@ In Powershell
 ```
 $env:FLASK_APP = where.app
 ```
-After setting `FLASK_APP`, start the development server with `flask run`.  
+
+*  Start the development server with `flask run`.  
 
 ## Frontend
 The frontend is written in Angular, see [where-web](where-web/README.md) for more info
