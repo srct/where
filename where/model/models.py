@@ -1,8 +1,9 @@
-from sqlalchemy.ext.declarative import as_declarative
 from sqlalchemy import Column, Integer, String, Float, JSON, ForeignKey, Enum
+from sqlalchemy.ext.declarative import as_declarative
 from sqlalchemy.orm import relationship, validates
 
 from . import FieldType
+
 
 @as_declarative()
 class Base(object):
@@ -31,9 +32,8 @@ class Point(Base):
         # Need to load category first or else attribute validation will fail
         if 'category' in kwargs:
             self.category = kwargs.pop('category')
-        
-        super(Point, self).__init__(**kwargs)
 
+        super(Point, self).__init__(**kwargs)
 
     @validates('attributes')
     def validate_data(self, _, data):
