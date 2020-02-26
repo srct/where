@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, url_for, make_response, g
+from flask import Flask, redirect, request, url_for, make_response, g, jsonify, abort
 from webargs import fields
 from webargs.flaskparser import use_args
 
@@ -6,7 +6,10 @@ from where.model import Session, Point, Category, Field
 from where.model.field_types import FieldType
 from where.validation import PointSchema, CategorySchema, BaseSchema
 
+from where.error_handlers import register_error_handlers
+
 app = Flask(__name__)
+register_error_handlers(app)
 
 
 @app.before_request
@@ -197,8 +200,10 @@ def get_resource(schema: BaseSchema, id: int):
     :return: a Flask Response object
     """
     resource = g.db_session.query(schema.Meta.model).get(id)
-    resp = (None, 404) if resource is None else \
-        (schema.dump(resource, many=False), 200)
+    if resource is None:
+        abort(404)
+
+    resp = (schema.dump(resource, many=False), 200)
     return make_response(resp)
 
 
@@ -248,12 +253,11 @@ def search_resource(schema, data):
 
     :return: a Flask Response object
     """
-
-    # TODO: returns 404 when accessing children - i think it should just return an empty array
     query = g.db_session.query(schema.Meta.model).filter_by(**data)
-    resp = (None, 404) if query.first() is None else \
-        (schema.dump(query.all(), many=True), 200)
+    if query.first() is None:
+        abort(404)
 
+    resp = (jsonify(schema.dump(query.all(), many=True)),200)
     return make_response(resp)
 
 
