@@ -85,3 +85,12 @@ class Field(Base):
         Verify that data is the correct type for this Field.
         """
         self.type.validate(data)
+
+
+class User(Base):
+    __tablename__ = 'user'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    net_id = Column(String, nullable=False)
+    access_level = Column(Integer, nullable=False)
+    
