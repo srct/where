@@ -1,8 +1,9 @@
-from flask import request
+from flask import request, g, make_response
 from urllib import parse
 import requests
 import xml.etree.ElementTree as et
-from flask_jwt_extended import JWTManager, verify_jwt_in_request, create_access_token, get_jwt_claims
+from flask_jwt_extended import JWTManager, verify_jwt_in_request, create_access_token, get_jwt_identity
+from where.model import User, AccessLevel
 from functools import wraps
 
 
@@ -16,15 +17,26 @@ def init(app):
     jwt = JWTManager(app)
 
 
-def authenticated(level=0):
+def authenticated(level=AccessLevel.USER, pass_user=False):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             verify_jwt_in_request()
-            return 
+            user = g.db_session.query(User).get(get_jwt_identity())
+
+            if user is None:
+                return make_response(None, 404)
+
+            if level > user.access_level:
+                return make_response(None, 500)
             
+            if pass_user:
+                return func(user, *args, **kwargs)
 
+            return func(*args, **kwargs)
 
+        return wrapper
+        
     return decorator    
 
 
