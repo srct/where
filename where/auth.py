@@ -1,4 +1,4 @@
-from flask import request, g, make_response
+from flask import request, g, make_response, url_for
 from urllib import parse
 import requests
 import xml.etree.ElementTree as et
@@ -36,12 +36,12 @@ def authenticated(level=AccessLevel.USER, pass_user=False):
             return func(*args, **kwargs)
 
         return wrapper
-        
+
     return decorator    
 
 
 def format_service_name():
-	return parse.quote(request.base_url)
+	return parse.quote('https://' + request.host + url_for('validate_auth'))
 
 
 def get_auth_url():

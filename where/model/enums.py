@@ -1,4 +1,4 @@
-from enum import Enum, unique
+from enum import Enum, IntEnum, unique
 
 
 class FieldType(Enum):
@@ -38,6 +38,6 @@ class FieldType(Enum):
 
 
 @unique
-class AccessLevel(Enum):
-    USER = 0
-    ADMIN = 1
+class AccessLevel(IntEnum):
+    USER = 1
+    ADMIN = 2

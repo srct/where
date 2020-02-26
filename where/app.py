@@ -2,14 +2,17 @@ from flask import Flask, redirect, jsonify, abort, request, url_for, make_respon
 from webargs.flaskparser import use_args
 from webargs import fields
 
-from where.model import Session, Point, Category, Field
-from where.model.field_types import FieldType
-
+from where.model import Session, Point, Category, Field, FieldType
 from where.validation import PointSchema, CategorySchema, FieldSchema
 
 from where import auth
+from where.auth import authenticated
+
+from flask_jwt_extended import create_access_token
+
 
 app = Flask(__name__)
+app.config['JWT_SECRET_KEY'] = 'potato'  # Note: Do not use potato in production
 auth.init(app)
 
 
@@ -30,6 +33,11 @@ def destroy_local_db_session(resp):
         return resp
 
 
+@app.route('/auth')
+def authenticate():
+    return(jsonify(auth_url=auth.get_auth_url()))
+
+
 @app.route('/validate-auth')
 @use_args({'ticket': fields.Str(required=True)})
 def validate_auth(args):
@@ -37,6 +45,7 @@ def validate_auth(args):
 
 
 @app.route('/')
+@authenticated()
 def index():
     print(PointSchema().Meta.model)
     return """
