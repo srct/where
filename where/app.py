@@ -27,6 +27,12 @@ def destroy_local_db_session(resp):
         return resp
 
 
+@app.route('/validate-auth')
+@use_args({'ticket': fields.Str(required=True)})
+def validate_auth(args):
+    pass
+
+
 @app.route('/')
 def index():
     print(PointSchema().Meta.model)
