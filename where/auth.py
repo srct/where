@@ -2,17 +2,30 @@ from flask import request
 from urllib import parse
 import requests
 import xml.etree.ElementTree as et
+from flask_jwt_extended import JWTManager, verify_jwt_in_request, create_access_token, get_jwt_claims
+from functools import wraps
 
 
 # XML cas namespace. Read: https://docs.python.org/2/library/xml.etree.elementtree.html#parsing-xml-with-namespaces
 XML_NS = {'cas': 'http://www.yale.edu/tp/cas'}
+jwt = None
 
 
-def find_auth_token():
-	if request.method == 'GET':
-		return request.args.get('ticket')
-	else:
-		return None
+def init(app):
+    global jwt
+    jwt = JWTManager(app)
+
+
+def authenticated(level=0):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            verify_jwt_in_request()
+            return 
+            
+
+
+    return decorator    
 
 
 def format_service_name():

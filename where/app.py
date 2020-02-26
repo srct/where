@@ -7,7 +7,10 @@ from where.model.field_types import FieldType
 
 from where.validation import PointSchema, CategorySchema, FieldSchema
 
+from where import auth
+
 app = Flask(__name__)
+auth.init(app)
 
 
 @app.before_request
