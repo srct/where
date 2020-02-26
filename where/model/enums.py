@@ -38,6 +38,6 @@ class FieldType(Enum):
 
 
 @unique
-class AuthLevel(Enum):
+class AccessLevel(Enum):
     USER = 0
     ADMIN = 1

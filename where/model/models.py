@@ -2,7 +2,7 @@ from sqlalchemy.ext.declarative import as_declarative
 from sqlalchemy import Column, Integer, String, Float, JSON, ForeignKey, Enum
 from sqlalchemy.orm import relationship, validates
 
-from . import FieldType
+from . import FieldType, AccessLevel
 
 @as_declarative()
 class Base(object):
@@ -88,9 +88,12 @@ class Field(Base):
 
 
 class User(Base):
+    """
+    Represents a user.
+    Not all users are kept in here, only those who contribute and thus are forced to log in.
+    """
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     net_id = Column(String, nullable=False)
-    access_level = Column(Integer, nullable=False)
-    
+    access_level = Column(Enum(AccessLevel), nullable=False)
