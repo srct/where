@@ -7,28 +7,13 @@ from where.auth import authenticated
 from where.error_handlers import register_error_handlers
 from where.model import Session
 from where.validation import PointSchema, CategorySchema, BaseSchema
+from where.routing_util import *
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'potato'  # Note: Do not use potato in production
 auth.init(app)
 register_error_handlers(app)
-
-
-@app.before_request
-def create_local_db_session():
-    g.db_session = Session()
-
-
-@app.after_request
-def destroy_local_db_session(resp):
-    try:
-        g.db_session.commit()
-    except BaseException:
-        g.db_session.rollback()
-        raise
-    finally:
-        Session.remove()
-        return resp
+init_routing_util(app)
 
 
 @app.route('/auth')
@@ -63,142 +48,88 @@ def test_data():
     return redirect('/')
 
 
-@app.route('/category/<int:category_id>')
-def get_category(category_id: int):
-    return get_resource(CategorySchema(), category_id)
+category = ResourceNamespace('category')
 
 
-@app.route('/category/<category_id>/children')
-def get_category_children(data: dict, category_id: int):
-    data = dict(request.args)
-    data['parent_id'] = category_id
-    return search_resource(PointSchema(), data)
+@category.getter
+def get_category(id: int):
+    return get_resource(CategorySchema(), id)
 
 
-@app.route('/point', methods=['GET'])
-@use_args({'parent_id': fields.Int(), 'category_id': fields.Int(required=True)})
+@category.creator
+@use_args(CategorySchema())
+def create_category(args):
+    return create_resource(CategorySchema(), args, 'get_category')
+
+
+@category.editor
+@use_args(CategorySchema(exclude=('id',), partial=('name',)))
+def edit_category(args, id: int):
+    return edit_resource(CategorySchema(), id, args)
+
+
+@category.route('/<int:id>/points')
+@use_args(PointSchema(only=('parent',)))
+def get_category_points(args: dict, id: int):
+    args['category_id'] = id
+    return search_resource(PointSchema(), args)
+
+
+point = ResourceNamespace('point')
+
+
+@point.route('/', methods=['GET'])
+@use_args(PointSchema(only=('parent', 'category',), partial=('category',)))
 def search_point(args):
     return search_resource(PointSchema(), args)
 
 
-@app.route('/point', methods=['POST'])
+@point.creator
 @use_args(PointSchema)
 def create_point(args):
     return create_resource(PointSchema(), args, 'get_point')
 
 
-@app.route('/point/<point_id>', methods=['GET'])
-def get_point(point_id):
-    return get_resource(PointSchema(), point_id)
+@point.getter
+def get_point(id):
+    return get_resource(PointSchema(), id)
 
 
-@app.route('/point/<point_id>', methods=['DELETE'])
-def del_point(point_id):
-    return delete_resource(PointSchema(), point_id)
+@point.deleter
+def del_point(id):
+    return delete_resource(PointSchema(), id)
 
 
-# TODO: Validate this
-@app.route('/point/<point_id>', methods=['PUT'])
-def edit_point(point_id):
-    return edit_resource(PointSchema(), point_id, request.get_json())
+@point.editor
+@use_args(PointSchema(exclude=('id',), partial=('lat', 'lon', 'attributes', 'category')))
+def edit_point(args, id):
+    return edit_resource(PointSchema(), id, args)
 
 
-@app.route('/point/<point_id>/children', methods=['GET'])
-def get_point_children(point_id: int):
-    data = dict(request.args)
-    data['parent_id'] = point_id
-    return search_resource(PointSchema(), data)
+@point.route('/<int:id>/children', methods=['GET'])
+@use_args(PointSchema(only=('category',), partial=('category',)))
+def get_point_children(args, id: int):
+    args['parent_id'] = id
+    return search_resource(PointSchema(), args)
 
 
-# Helper functions:
-def create_resource(schema: BaseSchema, data: dict, get_function: str):
-    """
-    Create the resource specified by the given model class and initialized with the data
-    dict, returning an appropriate JSON response.
+# Database session cleanup:
 
-    :param schema: The class of the model for this resource
-    :param data: The initial data for this resource stored as a dictionary
-    :param get_function: The name of the view function (as a string) that gets a single
-                           instance of this resource. This is used for the response Location header.
-    :return: a Flask Response object
-    """
-    resource = schema.Meta.model(**data)
-    g.db_session.add(resource)
-    g.db_session.commit()
-
-    response = make_response(schema.dump(resource, many=False), 201)
-    response.headers['Location'] = url_for(get_function, id=resource.id)
-    return response
+@app.before_request
+def create_local_db_session():
+    g.db_session = Session()
 
 
-def get_resource(schema: BaseSchema, resource_id: int):
-    """
-    Get a single resource of the specified model class by its ID.
-
-    :param schema: The class of the model for this resource
-    :param resource_id: The id of this resource
-    :return: a Flask Response object
-    """
-    resource = g.db_session.query(schema.Meta.model).get(resource_id)
-    if resource is None:
-        abort(404)
-
-    resp = (schema.dump(resource, many=False), 200)
-    return make_response(resp)
-
-
-def edit_resource(schema: BaseSchema, resource_id: int, data: dict):
-    """
-    Modify the resource of the specified model class and id with the data from
-    data. Does not perform data validation.
-
-    :param schema: The class of the model for this resource
-    :param resource_id: The id of this resource
-    :param data: The new data for this resource stored as a dictionary
-
-    Returns: a Flask Response object
-    """
-    resource = g.db_session.query(schema.Meta.model).get(resource_id)
-    for attr in data:
-        setattr(resource, attr, data[attr])
-    g.db_session.commit()
-
-    return make_response(schema.dump(resource), 200)
-
-
-def delete_resource(schema, resource_id):
-    """
-    Delete the resource of the specified model class and id and return the
-    appropriate response.
-
-    :param schema: The class of the model for this resource
-    :param resource_id: The id of this resource
-    :return: a Flask Response object
-    """
-    resource = g.db_session.query(schema.Meta.model).get(resource_id)
-    g.db_session.delete(resource)
-    g.db_session.commit()
-
-    return make_response('', 204)
-
-
-def search_resource(schema, data):
-    """
-    Search the database for a list of instances of the specified model class
-    that have the attributes given in data and return the appropriate JSON
-    response. Does not perform validation on search parameters.
-
-    :param schema: The class of the model for this resource
-    :param data: A dictionary containing search parameters
-
-    :return: a Flask Response object
-    """
-    query = g.db_session.query(schema.Meta.model).filter_by(**data)
-    if query.first() is None:
-        abort(404)
-
-    resp = (jsonify(schema.dump(query.all(), many=True)), 200)
-    return make_response(resp)
+@app.after_request
+def destroy_local_db_session(resp):
+    try:
+        g.db_session.commit()
+    except BaseException:
+        g.db_session.rollback()
+        raise
+    finally:
+        Session.remove()
+        return resp
 
 
 if __name__ == '__main__':
