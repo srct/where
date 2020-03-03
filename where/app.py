@@ -2,16 +2,11 @@ from flask import Flask, redirect, request, url_for, make_response, g, jsonify, 
 from webargs import fields
 from webargs.flaskparser import use_args
 
-from where.model import Session, Point, Category, Field, FieldType
-from where.validation import PointSchema, CategorySchema, BaseSchema
-
-from where.error_handlers import register_error_handlers
-
 from where import auth
 from where.auth import authenticated
-
-from flask_jwt_extended import create_access_token
-
+from where.error_handlers import register_error_handlers
+from where.model import Session
+from where.validation import PointSchema, CategorySchema, BaseSchema
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'potato'  # Note: Do not use potato in production
@@ -38,7 +33,7 @@ def destroy_local_db_session(resp):
 
 @app.route('/auth')
 def authenticate():
-    return(jsonify(auth_url=auth.get_auth_url()))
+    return jsonify(auth_url=auth.get_auth_url())
 
 
 @app.route('/validate-auth')
@@ -68,15 +63,15 @@ def test_data():
     return redirect('/')
 
 
-@app.route('/category/<int:id>')
-def get_category(id: int):
-    return get_resource(CategorySchema(), id)
+@app.route('/category/<int:category_id>')
+def get_category(category_id: int):
+    return get_resource(CategorySchema(), category_id)
 
 
-@app.route('/category/<int:id>/children')
-def get_category_children(data: dict, id: int):
+@app.route('/category/<category_id>/children')
+def get_category_children(data: dict, category_id: int):
     data = dict(request.args)
-    data['parent_id'] = id
+    data['parent_id'] = category_id
     return search_resource(PointSchema(), data)
 
 
@@ -92,33 +87,31 @@ def create_point(args):
     return create_resource(PointSchema(), args, 'get_point')
 
 
-@app.route('/point/<int:id>', methods=['GET'])
-def get_point(id):
-    return get_resource(PointSchema(), id)
+@app.route('/point/<point_id>', methods=['GET'])
+def get_point(point_id):
+    return get_resource(PointSchema(), point_id)
 
 
-@app.route('/point/<int:id>', methods=['DELETE'])
-def del_point(id):
-    return delete_resource(PointSchema(), id)
+@app.route('/point/<point_id>', methods=['DELETE'])
+def del_point(point_id):
+    return delete_resource(PointSchema(), point_id)
 
 
 # TODO: Validate this
-@app.route('/point/<int:id>', methods=['PUT'])
-def edit_point(id):
-    return edit_resource(PointSchema(), id, request.get_json())
+@app.route('/point/<point_id>', methods=['PUT'])
+def edit_point(point_id):
+    return edit_resource(PointSchema(), point_id, request.get_json())
 
 
-@app.route('/point/<int:id>/children', methods=['GET'])
-def get_point_children(id: int):
+@app.route('/point/<point_id>/children', methods=['GET'])
+def get_point_children(point_id: int):
     data = dict(request.args)
-    data['parent_id'] = id
+    data['parent_id'] = point_id
     return search_resource(PointSchema(), data)
 
 
 # Helper functions:
-
-
-def create_resource(schema: CategorySchema, data: dict, get_function: str):
+def create_resource(schema: BaseSchema, data: dict, get_function: str):
     """
     Create the resource specified by the given model class and initialized with the data
     dict, returning an appropriate JSON response.
@@ -138,15 +131,15 @@ def create_resource(schema: CategorySchema, data: dict, get_function: str):
     return response
 
 
-def get_resource(schema: BaseSchema, id: int):
+def get_resource(schema: BaseSchema, resource_id: int):
     """
     Get a single resource of the specified model class by its ID.
 
     :param schema: The class of the model for this resource
-    :param id: The id of this resource
+    :param resource_id: The id of this resource
     :return: a Flask Response object
     """
-    resource = g.db_session.query(schema.Meta.model).get(id)
+    resource = g.db_session.query(schema.Meta.model).get(resource_id)
     if resource is None:
         abort(404)
 
@@ -154,18 +147,18 @@ def get_resource(schema: BaseSchema, id: int):
     return make_response(resp)
 
 
-def edit_resource(schema: BaseSchema, id: int, data: dict):
+def edit_resource(schema: BaseSchema, resource_id: int, data: dict):
     """
     Modify the resource of the specified model class and id with the data from
     data. Does not perform data validation.
 
     :param schema: The class of the model for this resource
-    :param id: The id of this resource
+    :param resource_id: The id of this resource
     :param data: The new data for this resource stored as a dictionary
 
     Returns: a Flask Response object
     """
-    resource = g.db_session.query(schema.Meta.model).get(id)
+    resource = g.db_session.query(schema.Meta.model).get(resource_id)
     for attr in data:
         setattr(resource, attr, data[attr])
     g.db_session.commit()
@@ -173,16 +166,16 @@ def edit_resource(schema: BaseSchema, id: int, data: dict):
     return make_response(schema.dump(resource), 200)
 
 
-def delete_resource(schema, id):
+def delete_resource(schema, resource_id):
     """
     Delete the resource of the specified model class and id and return the
     appropriate response.
 
     :param schema: The class of the model for this resource
-    :param id: The id of this resource
+    :param resource_id: The id of this resource
     :return: a Flask Response object
     """
-    resource = g.db_session.query(schema.Meta.model).get(id)
+    resource = g.db_session.query(schema.Meta.model).get(resource_id)
     g.db_session.delete(resource)
     g.db_session.commit()
 
@@ -204,7 +197,7 @@ def search_resource(schema, data):
     if query.first() is None:
         abort(404)
 
-    resp = (jsonify(schema.dump(query.all(), many=True)),200)
+    resp = (jsonify(schema.dump(query.all(), many=True)), 200)
     return make_response(resp)
 
 
