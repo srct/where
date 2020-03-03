@@ -1,7 +1,7 @@
-import enum
+from enum import Enum, IntEnum, unique
 
 
-class FieldType(enum.Enum):
+class FieldType(Enum):
     STRING = {'value': str}
     FLOAT = {'value': float}
     INTEGER = {'value': int}
@@ -35,3 +35,9 @@ class FieldType(enum.Enum):
                 raise ValueError(f"Expecting field of type {self.value[field]}, got {type(data[field])}")
         if len(data) != len(self.value):
             raise ValueError(f"Too many fields for field of type {self.name}")
+
+
+@unique
+class AccessLevel(IntEnum):
+    USER = 1
+    ADMIN = 2
