@@ -1,13 +1,12 @@
-from flask import Flask, redirect, request, url_for, make_response, g, jsonify, abort
+from flask import Flask, redirect, g, jsonify
 from webargs import fields
 from webargs.flaskparser import use_args
 
+from routing_util import init_routing_util, ResourceNamespace, get_resource, CategorySchema, create_resource, edit_resource, search_resource, PointSchema, delete_resource
 from where import auth
 from where.auth import authenticated
 from where.error_handlers import register_error_handlers
 from where.model import Session
-from where.validation import PointSchema, CategorySchema, BaseSchema
-from where.routing_util import *
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'potato'  # Note: Do not use potato in production
