@@ -1,5 +1,5 @@
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields
-from .model import Point, Category, Field, Session
+from where.model import Point, Category, Field, Session
 from flask import url_for, make_response, abort, g, jsonify
 
 

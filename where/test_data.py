@@ -1,5 +1,6 @@
+from where.model import Session, Point, Category, Field, FieldType, User, AccessLevel
+
 from flask import g
-from .model import *
 
 def create_test_data():
     g.db_session.query(Point).delete()
@@ -73,5 +74,10 @@ def create_test_data():
             "value": True
         }
     }
+
     g.db_session.add(fn)
+
+    user = User(access_level=AccessLevel.USER, net_id='zperkin')
+    g.db_session.add(user)
+
     g.db_session.commit()

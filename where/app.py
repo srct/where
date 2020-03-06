@@ -1,20 +1,33 @@
-from flask import Flask, redirect, request, url_for, make_response, g, jsonify, abort
+from flask import Flask, redirect, g, jsonify
 from webargs import fields
 from webargs.flaskparser import use_args
 
-from where.model import Session, Point, Category, Field
-from where.model.field_types import FieldType
-from where.routing_util import *
-
+from routing_util import init_routing_util, ResourceNamespace, get_resource, CategorySchema, create_resource, edit_resource, search_resource, PointSchema, delete_resource
+from where import auth
+from where.auth import authenticated
 from where.error_handlers import register_error_handlers
-from where.test_data import create_test_data
+from where.model import Session
 
 app = Flask(__name__)
+app.config['JWT_SECRET_KEY'] = 'potato'  # Note: Do not use potato in production
+auth.init(app)
 register_error_handlers(app)
 init_routing_util(app)
 
 
+@app.route('/auth')
+def authenticate():
+    return jsonify(auth_url=auth.get_auth_url())
+
+
+@app.route('/validate-auth')
+@use_args({'ticket': fields.Str(required=True)})
+def validate_auth(args):
+    pass
+
+
 @app.route('/')
+@authenticated()
 def index():
     return """
 <head>
@@ -29,7 +42,8 @@ def index():
 
 @app.route('/test-data')
 def test_data():
-    create_test_data()
+    import where.test_data as t
+    t.create_test_data()
     return redirect('/')
 
 
