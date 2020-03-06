@@ -3,6 +3,10 @@ __pycache__/
 *.pyo
 db.sqlite3
 .idea
-env
+env/
+venv/
 .vscode/
 docs/_build/
+.flaskenv
+*.sublime-workspace
+*.sublime-project
