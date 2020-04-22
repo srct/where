@@ -5,7 +5,7 @@ from webargs.flaskparser import use_args
 from model import AccessLevel
 from routing_util import init_routing_util, ResourceNamespace, get_resource, CategorySchema, create_resource, edit_resource, search_resource, PointSchema, delete_resource
 from where import auth
-from where.auth import authenticated
+# from where.auth import authenticated
 from where.error_handlers import register_error_handlers
 from where.model import Session
 
@@ -55,14 +55,14 @@ def get_category(id: int):
     return get_resource(CategorySchema(), id)
 
 
-@authenticated(AccessLevel.ADMIN)
+# @authenticated(AccessLevel.ADMIN)
 @category.creator
 @use_args(CategorySchema())
 def create_category(args):
     return create_resource(CategorySchema(), args, 'get_category')
 
 
-@authenticated(AccessLevel.ADMIN)
+# @authenticated(AccessLevel.ADMIN)
 @category.editor
 @use_args(CategorySchema(exclude=('id',), partial=('name',)))
 def edit_category(args, id: int):
@@ -85,7 +85,7 @@ def search_point(args):
     return search_resource(PointSchema(), args)
 
 
-@authenticated(AccessLevel.ADMIN)
+# @authenticated(AccessLevel.ADMIN)
 @point.creator
 @use_args(PointSchema)
 def create_point(args):
@@ -97,7 +97,7 @@ def get_point(id):
     return get_resource(PointSchema(), id)
 
 
-@authenticated(AccessLevel.ADMIN)
+# @authenticated(AccessLevel.ADMIN)
 @point.deleter
 def del_point(id):
     return delete_resource(PointSchema(), id)
