@@ -2,6 +2,7 @@ from flask import Flask, redirect, g, jsonify
 from webargs import fields
 from webargs.flaskparser import use_args
 
+from model import AccessLevel
 from routing_util import init_routing_util, ResourceNamespace, get_resource, CategorySchema, create_resource, edit_resource, search_resource, PointSchema, delete_resource
 from where import auth
 from where.auth import authenticated
@@ -9,7 +10,7 @@ from where.error_handlers import register_error_handlers
 from where.model import Session
 
 app = Flask(__name__)
-app.config['JWT_SECRET_KEY'] = 'potato'  # Note: Do not use potato in production
+app.config['JWT_SECRET_KEY'] = 'potato'  # TODO set this from some kind of config file / environment variable
 auth.init(app)
 register_error_handlers(app)
 init_routing_util(app)
@@ -27,7 +28,6 @@ def validate_auth(args):
 
 
 @app.route('/')
-@authenticated()
 def index():
     return """
 <head>
@@ -55,12 +55,14 @@ def get_category(id: int):
     return get_resource(CategorySchema(), id)
 
 
+@authenticated(AccessLevel.ADMIN)
 @category.creator
 @use_args(CategorySchema())
 def create_category(args):
     return create_resource(CategorySchema(), args, 'get_category')
 
 
+@authenticated(AccessLevel.ADMIN)
 @category.editor
 @use_args(CategorySchema(exclude=('id',), partial=('name',)))
 def edit_category(args, id: int):
@@ -83,6 +85,7 @@ def search_point(args):
     return search_resource(PointSchema(), args)
 
 
+@authenticated(AccessLevel.ADMIN)
 @point.creator
 @use_args(PointSchema)
 def create_point(args):
@@ -94,6 +97,7 @@ def get_point(id):
     return get_resource(PointSchema(), id)
 
 
+@authenticated(AccessLevel.ADMIN)
 @point.deleter
 def del_point(id):
     return delete_resource(PointSchema(), id)

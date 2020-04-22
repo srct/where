@@ -1,6 +1,7 @@
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields
-from where.model import Point, Category, Field, Session
 from flask import url_for, make_response, abort, g, jsonify
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields
+
+from where.model import Point, Category, Field, Session
 
 
 def init_routing_util(app):
@@ -39,25 +40,20 @@ class ResourceNamespace:
     def __init__(self, name):
         self.name = name
 
-
     def route(self, path, **kwargs):
         def decorator(func):
             self.app.route(f'/{self.name}{path}', **kwargs)(func)
-        
-        return decorator
 
+        return decorator
 
     def creator(self, func):
         self.route('/', methods=['POST'])(func)
 
-
     def getter(self, func):
         self.route('/<int:id>', methods=['GET'])(func)
 
-
     def deleter(self, func):
         self.route('/<int:id>', methods=['DELETE'])(func)
-
 
     def editor(self, func):
         self.route('/<int:id>', methods=['PUT'])(func)
@@ -149,5 +145,5 @@ def search_resource(schema: BaseSchema, data: dict):
     if query.first() is None:
         abort(404)
 
-    resp = (jsonify(schema.dump(query.all(), many=True)),200)
+    resp = (jsonify(schema.dump(query.all(), many=True)), 200)
     return make_response(resp)
